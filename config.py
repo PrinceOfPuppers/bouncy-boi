@@ -16,9 +16,19 @@ class Config:
         self.teatherSpringConst=100
         self.teatherMaxStrech=100
 
-        self.boostMax=70
-        self.boostRechargeRate=0.5
-        self.boostForce=700
+        #applied in boosthandler
+        self.screenShake=3
+
+        self.starRadius=3
+        self.starParalaxCoefficents = [1,1.5,2.74]
+
+        self.scoreDivisor=10
+
+        self.fontSize=60
+        self.boostMax=100
+        self.boostRechargeRate=1
+        self.boostConsumptionRate=1
+        self.boostForce=500
         #screen dimensions and scaling
         screenWidth=root.winfo_screenwidth()-100
         screenHeight=root.winfo_screenheight()-100

@@ -1,11 +1,51 @@
 import pygame as pg
 from config import Config
+from random import random
 from player import Player,Booster,Teather
 from pivots import PivotManager
 from helperFuncts import convertCoords,convertCoordsInv
 from menu import Button,TextBox
 
-class GameManager:
+class Background:
+    def __init__(self,config,screenPos):
+        self.starRadius=config.starRadius
+        self.starDensity=.2*(10)**(-4)
+        self.starNumber=int(self.starDensity*(config.screenSize[0]*config.screenSize[1]))
+ 
+        self.starParalaxCoefficents = config.starParalaxCoefficents
+
+        self.starsInitalPos=[]
+        self.starsCurrentPos=[]
+        for i in range(0,self.starNumber):
+            star=random()*config.screenSize[0]+random()*config.screenSize[1]*1j
+            self.starsInitalPos.append(star)
+            self.starsCurrentPos.append(list(convertCoords(star,screenPos)))
+
+
+
+
+
+    def handler(self,display,screenSize,screenPos):
+        pg.Surface.fill(display,(0,0,0))
+        for i in range(0,self.starNumber):
+            currentPos=convertCoords(self.starsInitalPos[i],screenPos)
+            self.starsCurrentPos[i][0]=currentPos[0]
+            self.starsCurrentPos[i][1]=currentPos[1]
+
+            self.starsCurrentPos[i][0]%=screenSize[0]
+            self.starsCurrentPos[i][1]%=screenSize[1]
+
+            for paralaxCoeff in self.starParalaxCoefficents:
+                pg.draw.circle(display,(255,255,255),(int(paralaxCoeff*self.starsCurrentPos[i][0]),int(paralaxCoeff*self.starsCurrentPos[i][1])),self.starRadius,1)
+
+
+
+
+
+
+
+
+class GameManager: 
 
     def __init__(self,config):
 
@@ -17,24 +57,30 @@ class GameManager:
         self.initalPlrVel=config.initalPlayerVel
         self.initalPlrPos=config.screenSize[0]/2+1j*config.screenSize[1]
 
-        self.plr=Player(config,Teather(config),Booster(config),self.initalPlrPos,self.initalPlrVel)
-
-
-        self.config=config
         #screen height is height of top left corner from start (value will get more negative as player goes up)
         self.screenPosition=[0,0]
+
+        self.plr=Player(config,Teather(config),Booster(config),self.initalPlrPos,self.initalPlrVel)
+        self.bg=Background(config,self.screenPosition)
+
+        self.config=config
+        
+
         self.screenSize=config.screenSize
         self.screenVelSlope=config.screenVelSlope
         self.spf=1/config.fps
         
-        self.scoreDisplay=TextBox('PLACEHOLDER',(255,0,0),(self.screenSize[0]/10,self.screenSize[1]/10),40)
+        self.scoreDivisor=config.scoreDivisor
+
+        self.scoreDisplay=TextBox('PLACEHOLDER',(255,0,0),(self.screenSize[0]/15,self.screenSize[1]/20),round(config.fontSize/2))
+        self.scoreDisplay.initalizeTextBox()
 
         self.resetButton=Button((self.screenSize[0]/2,2*self.screenSize[1]/3),self.screenSize[0]/8,self.screenSize[0]/8,config.resetSymbol,(255,0,0),(255,255,255),True)
-        self.resetText=TextBox('PLACEHOLDER',(255,0,0),(self.screenSize[0]/2,self.screenSize[1]/3),80)
+        self.resetText=TextBox('PLACEHOLDER',(255,0,0),(self.screenSize[0]/2,self.screenSize[1]/3),config.fontSize)
         self.resetText.initalizeTextBox()
 
         self.startButton=Button((self.screenSize[0]/2,2*self.screenSize[1]/3),self.screenSize[0]/8,self.screenSize[0]/8,config.playSymbol,(255,0,0),(255,255,255),True)
-        self.startText=TextBox('BOUNCY BOI',(255,0,0),(self.screenSize[0]/2,self.screenSize[1]/3),80)
+        self.startText=TextBox('BOUNCY BOI',(255,0,0),(self.screenSize[0]/2,self.screenSize[1]/3),config.fontSize)
         self.startText.initalizeTextBox()
 
     def applyControls(self):
@@ -43,17 +89,22 @@ class GameManager:
             if event.type == pg.QUIT:
                 self.hasQuit=True
                 
-            if event.type == pg.MOUSEBUTTONDOWN:
+            elif event.type == pg.MOUSEBUTTONDOWN:
                 if event.button== pg.BUTTON_LEFT:
                     self.plr.teather.activate(self.plr.pos,self.pivotMnger,convertCoordsInv(event.pos,self.screenPosition))
             
-            if event.type == pg.MOUSEBUTTONUP:
+            elif event.type == pg.MOUSEBUTTONUP:
                 if event.button== pg.BUTTON_LEFT:
                     self.plr.teather.deactivate()
-        
-        keys=pg.key.get_pressed()
-        if keys[pg.K_SPACE]:
-            self.plr.booster.boost(self.display,self.plr,self.screenPosition,self.tickNumber)
+
+            elif event.type ==pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    self.plr.booster.enable()
+
+            elif event.type == pg.KEYUP:
+                if event.key ==pg.K_SPACE:
+                    self.plr.booster.disable()
+
 
     def applyControlsMenu(self,button):
         mouseClicked=False
@@ -79,6 +130,7 @@ class GameManager:
     
     def resetValues(self):
         self.plr.alive=True
+        self.plr.booster.disable()
         self.tickNumber=0
         self.screenVelSlope=self.config.screenVelSlope
         self.plr.pos=self.initalPlrPos
@@ -87,10 +139,22 @@ class GameManager:
         self.screenPosition=[0,0]
         self.resetButton.wasPressed=False
 
+        #keeps stars fixed when jumping between menus
+        for i in range(0,self.bg.starNumber):
+            self.bg.starsInitalPos[i]=self.bg.starsCurrentPos[i][0]+self.bg.starsCurrentPos[i][1]*1j
+
     def resetScreen(self):
             #intialize score text
-            score=round(self.screenPosition[1]/10)
-            self.resetText.changeText('SCORE'+' '+str(score))
+            highScore=int(open("highscore.txt", "r").read())
+            score=round(self.screenPosition[1]/self.scoreDivisor)
+
+            if score>=highScore:
+                self.resetText.changeText('HIGHSCORE'+' '+str(score))
+                writeHighscore=open("highscore.txt", "w")
+                writeHighscore.write(str(score))
+            else:
+                self.resetText.changeText('SCORE'+' '+str(score))
+            
             self.plr.teather.deactivate()
             while not self.hasQuit and not self.resetButton.wasPressed:
 
@@ -101,9 +165,9 @@ class GameManager:
                 self.tickNumber+=1
                 self.clock.tick_busy_loop(self.config.fps)
 
-                pg.Surface.fill(self.display,(0,0,0))
+                self.bg.handler(self.display,self.screenSize,self.screenPosition)
                 self.resetText.displayActiveLines(self.display)
-                self.plr.handler(self.display,self.screenSize,self.screenPosition)
+                self.plr.handler(self.display,self.screenSize,self.screenPosition,self.tickNumber)
                 self.pivotMnger.handler(self.display,self.screenPosition,self.screenSize,convertCoordsInv(pg.mouse.get_pos(),self.screenPosition))
                 self.applyControlsMenu(self.resetButton)
                 pg.display.update()
@@ -118,7 +182,7 @@ class GameManager:
                 self.tickNumber+=1
                 self.clock.tick_busy_loop(self.config.fps)
 
-                pg.Surface.fill(self.display,(0,0,0))
+                self.bg.handler(self.display,self.screenSize,self.screenPosition)
                 self.startText.displayActiveLines(self.display)
                 self.pivotMnger.handler(self.display,self.screenPosition,self.screenSize,convertCoordsInv(pg.mouse.get_pos(),self.screenPosition))
                 self.applyControlsMenu(self.startButton)
@@ -130,9 +194,14 @@ class GameManager:
                 self.scrollScreen()
                 self.tickNumber+=1
                 self.clock.tick_busy_loop(self.config.fps)
+                self.bg.handler(self.display,self.screenSize,self.screenPosition)
 
-                pg.Surface.fill(self.display,(0,0,0))
-                self.plr.handler(self.display,self.screenSize,self.screenPosition)
+                #displays score in top left
+                score=abs(round(self.screenPosition[1]/self.scoreDivisor))
+                self.scoreDisplay.changeText(str(score),True)
+                self.scoreDisplay.displayActiveLines(self.display)
+
+                self.plr.handler(self.display,self.screenSize,self.screenPosition,self.tickNumber)
                 self.pivotMnger.handler(self.display,self.screenPosition,self.screenSize,convertCoordsInv(pg.mouse.get_pos(),self.screenPosition))
                 self.applyControls()
                 pg.display.update()

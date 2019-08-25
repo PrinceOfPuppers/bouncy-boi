@@ -120,9 +120,10 @@ class TextBox:
                 displayLine=((line[0][0]+offsetX,line[0][1]+offsetY),(line[1][0]+offsetX,line[1][1]+offsetY))
                 self.lineListInactive.append(displayLine)
     
-    def changeText(self,text):
-        self.allLinesActivated=False
-        self.allLinesInactive=True
+    def changeText(self,text,DisplayAll=False):
+        #display all sets all line to active as soon as text is changed
+        self.allLinesActivated=DisplayAll
+        self.allLinesInactive=not DisplayAll
         self.text=text
         self.textLength=len(text)
         #needs to be recalculated because potenntial changes to text length
@@ -144,7 +145,11 @@ class TextBox:
                 offsetX=self.posisiton[0]+i*(self.characterWidth+self.characterSpacing)
                 offsetY=self.posisiton[1]
                 displayLine=((line[0][0]+offsetX,line[0][1]+offsetY),(line[1][0]+offsetX,line[1][1]+offsetY))
-                self.lineListInactive.append(displayLine)
+
+                if DisplayAll:
+                    self.lineListActive.append(displayLine)
+                else:
+                    self.lineListInactive.append(displayLine)
         
     def displayActiveLines(self,gameDisplay):
         for line in self.lineListActive:

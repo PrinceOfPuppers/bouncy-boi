@@ -52,26 +52,20 @@ class Player(DynamicObj):
         if self.teather.active:
             self.teather.draw(display,self.pos,screenPos)
             
-        
-        #draws boost bar
-        self.booster.drawBoostBar(display,screenSize)
 
-    def handler(self,display,screenSize,screenPos):
+    def handler(self,display,screenSize,screenPos,tickNumber):
         self.applyTickMotion()
+
         if self.alive:
             self.draw(display,screenSize,screenPos)
+            self.booster.boostHandler(display,self,screenPos,tickNumber)
         if self.teather.active:
             if self.teather.len/abs(self.teather.pivot.pos-self.pos)<1:
                 displacement=(1-self.teather.len/abs(self.teather.pivot.pos-self.pos))*(self.teather.pivot.pos-self.pos)
                 self.applyForce(self.teather.springConst*(displacement))
 
-        #recharges boost
-        if self.booster.boostAmmount<self.booster.boostMax:
-            self.booster.boostAmmount+=self.booster.boostRechargeRate
-
 
         #checks if player is dead
-
         #they must be below the screen
         if convertCoords(self.pos,screenPos)[1]>screenSize[1]:
             #teather must not be active
@@ -88,6 +82,7 @@ class Booster:
         self.boostMax=config.boostMax
         self.boostAmmount=self.boostMax
         self.boostRechargeRate=config.boostRechargeRate
+        self.boostConsumptionRate=config.boostConsumptionRate
         self.boostForce=config.boostForce
 
         self.boostBarDimensions=(8*config.screenSize[0]/10,config.screenSize[1]/50)
@@ -96,10 +91,20 @@ class Booster:
         self.animation=config.boosterAnimation
         self.animationRelPlayer=np.copy(config.boosterAnimation)
         self.numFrames=len(self.animation)
-  
+
+        self.enabled=False
+        self.screenShake=config.screenShake
     
-    def boost(self,display,player,screenPos,tickNumber):
+    def enable(self):
         if self.boostAmmount>1+self.boostRechargeRate:
+            self.enabled=True
+    
+    def disable(self):
+        self.enabled=False
+    
+    def boostHandler(self,display,player,screenPos,tickNumber):
+        #must be called every tick by player handler.random
+        if self.enabled:
             #draws booster animation
             frameNum=tickNumber%self.numFrames
             rotateVecs(self.animation[frameNum],self.animationRelPlayer[frameNum],round(phase(player.vel),5)+pi/2,player.rotMatrix)
@@ -109,14 +114,27 @@ class Booster:
                 self.animationRelPlayer[frameNum][i][1]+=plrPos[1]
             pg.draw.aalines(display,(255,0,0),True,self.animationRelPlayer[frameNum])
 
-            self.boostAmmount-=2
+            #screenShake
+            if self.screenShake>0:
+                screenPos[0]+=np.random.randint(-self.screenShake,self.screenShake)
+                screenPos[1]+=np.random.randint(-self.screenShake,self.screenShake)
+
+            self.boostAmmount-=self.boostConsumptionRate
             player.applyForce(self.boostForce*player.vel/abs(player.vel))
-    
-    def drawBoostBar(self,display,screenSize):
+
+            #shuts off booster if out of fuel
+            if self.boostAmmount<=1+self.boostRechargeRate:
+                self.enabled=False
+        
+        #charges booster when not in use
+        if not self.enabled:
+            if self.boostAmmount<self.boostMax:
+                self.boostAmmount+=self.boostRechargeRate     
+
+        #draws boost bar
         self.boostBar.width=self.boostBarDimensions[0]*self.boostAmmount/self.boostMax
         pg.draw.rect(display,(255,0,0),self.boostBar,1)
-
-
+    
 
 class Teather:
     def __init__(self,config):

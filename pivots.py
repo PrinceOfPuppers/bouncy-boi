@@ -24,7 +24,7 @@ class PivotManager:
             pivotScreenCoords=convertCoords(pivot.pos,screenPos)
             if not pivot.teathered:
                 if pivotScreenCoords[1]>screenSize[1]+10:
-                    pivot.pos=randint(0,screenSize[0])-(screenPos[1]+randint(0,self.randYOffsetCap))*1j
+                    pivot.pos=randint(0,screenSize[0])-(screenPos[1]+randint(0,self.randYOffsetCap) +10)*1j
 
                 if pivotScreenCoords[0]>screenSize[0]:
                     pivot.pos-=screenSize[0]
