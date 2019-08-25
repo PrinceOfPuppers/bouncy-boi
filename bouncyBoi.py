@@ -1,6 +1,7 @@
 import pygame as pg
 from config import Config
 from random import random
+import os
 from player import Player,Booster,Teather
 from pivots import PivotManager
 from helperFuncts import convertCoords,convertCoordsInv
@@ -64,8 +65,9 @@ class GameManager:
         self.bg=Background(config,self.screenPosition)
 
         self.config=config
-        
-
+        #used for reading and writing score
+        self.fileName=os.path.basename(__file__)
+        self.dirPath=os.path.realpath(__file__)[0:-len(self.fileName)]
         self.screenSize=config.screenSize
         self.screenVelSlope=config.screenVelSlope
         self.spf=1/config.fps
@@ -104,7 +106,6 @@ class GameManager:
             elif event.type == pg.KEYUP:
                 if event.key ==pg.K_SPACE:
                     self.plr.booster.disable()
-
 
     def applyControlsMenu(self,button):
         mouseClicked=False
@@ -145,12 +146,12 @@ class GameManager:
 
     def resetScreen(self):
             #intialize score text
-            highScore=int(open("highscore.txt", "r").read())
+            highScore=int(open(self.dirPath+"highscore.txt", "r").read())
             score=round(self.screenPosition[1]/self.scoreDivisor)
 
             if score>=highScore:
                 self.resetText.changeText('HIGHSCORE'+' '+str(score))
-                writeHighscore=open("highscore.txt", "w")
+                writeHighscore=open(self.dirPath+"highscore.txt", "w")
                 writeHighscore.write(str(score))
             else:
                 self.resetText.changeText('SCORE'+' '+str(score))
