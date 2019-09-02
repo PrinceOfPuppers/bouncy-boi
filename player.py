@@ -116,8 +116,8 @@ class Booster:
 
             #screenShake
             if self.screenShake>0:
-                screenPos[0]+=np.random.randint(-self.screenShake,self.screenShake)
-                screenPos[1]+=np.random.randint(-self.screenShake,self.screenShake)
+                screenPos[0]+=np.random.randint(-self.screenShake,self.screenShake+1)
+                screenPos[1]+=np.random.randint(-self.screenShake,self.screenShake+1)
 
             self.boostAmmount-=self.boostConsumptionRate
             player.applyForce(self.boostForce*player.vel/abs(player.vel))

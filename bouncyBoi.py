@@ -151,7 +151,7 @@ class GameManager:
                 writeHighscore=open(self.dirPath+"highscore.txt", "w")
                 writeHighscore.write(str(score))
             else:
-                self.resetText.changeText('SCORE'+' '+str(score))
+                self.resetText.changeText('SCORE'+' '+str(abs(score)))
             
             self.plr.teather.deactivate()
             while not self.hasQuit and not self.resetButton.wasPressed:

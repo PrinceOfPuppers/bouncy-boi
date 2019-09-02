@@ -10,7 +10,7 @@ class Config:
         self.pivotRadius=10
         self.grav=0+981j
 
-        self.screenVelSlope=0#0.1
+        self.screenVelSlope=0.1
         self.initalPlayerVel=0-1000j
 
         self.teatherSpringConst=100
@@ -44,7 +44,7 @@ class Config:
         self.playSymbol=[[[-30, -40], [-30, 40]], [[-30, 40], [50, 0]], [[50, 0], [-30, -40]]]
         
         self.playerAsset=np.array([[-10.0, 15], [0.0, -15.0], [10.0, 15], [0.0, 5.0]])
-        self.pivotAssets=np.array([[[-15, 0], [-15, 0], [-10, 5], [-10, 10], [-5, 10], [0, 15], [5, 10], [10, 10], [10, 5], [15, 0], [10, -5], [10, -10], [5, -10], [0, -15], [-5, -10], [-10, -10],[-10, -5]],[[0, 5], [5, 0], [0, -5], [-5, 0]]])
+        self.pivotAssets=np.array([[[-15.0, 0.0], [-15, 0], [-10, 5], [-10, 10], [-5, 10], [0, 15], [5, 10], [10, 10.0], [10, 5], [15, 0], [10, -5], [10, -10], [5, -10], [0, -15], [-5, -10], [-10, -10],[-10, -5]],[[0, 5], [5, 0], [0, -5], [-5, 0]]])
         
         self.boosterAnimation=np.array([
             [[0.0, 10.0], [-5.0, 15.0], [0.0, 30.0], [5.0, 15.0]], 
@@ -54,3 +54,56 @@ class Config:
             [[0.0, 10.0], [-5.0, 15.0], [0.0, 40.0], [5.0, 15.0]],
             [[0.0, 10.0], [-5.0, 15.0], [0.0, 35.0], [5.0, 15.0]]
             ])
+
+
+        self.scaleToScreen()
+    
+    def scaleToScreen(self):
+        self.pivotRadius*=self.screenScaling
+        self.grav*=self.screenScaling
+
+        self.screenVelSlope*=self.screenScaling
+        self.initalPlayerVel*=self.screenScaling
+
+        self.teatherMaxStrech*=self.screenScaling
+
+        #applied in boosthandler
+        self.screenShake*=self.screenScaling
+        self.screenShake=int(self.screenShake)
+
+        self.starRadius*=self.screenScaling
+        self.starRadius=int(self.starRadius)
+        for starParalax in self.starParalaxCoefficents:
+            starParalax*=self.screenScaling
+
+
+        self.scoreDivisor*=self.screenScaling
+
+        self.fontSize*=self.screenScaling
+        self.boostForce*=self.screenScaling
+
+
+
+        self.randPivotYOffsetCap*=self.screenScaling
+
+        for point in self.resetSymbol[0]:
+            point[0]*=self.screenScaling
+            point[1]*=self.screenScaling
+        
+        for point in self.playSymbol[0]:
+            point[0]*=self.screenScaling
+            point[1]*=self.screenScaling
+        
+        for point in self.playerAsset:
+            point[0]*=self.screenScaling
+            point[1]*=self.screenScaling
+
+        for asset in self.pivotAssets:
+            for point in asset:
+                point[0]*=self.screenScaling
+                point[1]*=self.screenScaling
+
+        for frame in self.boosterAnimation:
+            for point in frame:
+                point[0]*=self.screenScaling
+                point[1]*=self.screenScaling
