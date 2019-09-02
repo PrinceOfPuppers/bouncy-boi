@@ -12,7 +12,7 @@ class Background:
         self.starRadius=config.starRadius
         self.starDensity=.2*(10)**(-4)
         self.starNumber=int(self.starDensity*(config.screenSize[0]*config.screenSize[1]))
- 
+        self.starColor=config.starColor
         self.starParalaxCoefficents = config.starParalaxCoefficents
 
         self.starsInitalPos=[]
@@ -37,10 +37,7 @@ class Background:
             self.starsCurrentPos[i][1]%=screenSize[1]
 
             for paralaxCoeff in self.starParalaxCoefficents:
-                pg.draw.circle(display,(255,255,255),(int(paralaxCoeff*self.starsCurrentPos[i][0]),int(paralaxCoeff*self.starsCurrentPos[i][1])),self.starRadius,1)
-
-
-
+                pg.draw.circle(display,self.starColor,(int(paralaxCoeff*self.starsCurrentPos[i][0]),int(paralaxCoeff*self.starsCurrentPos[i][1])),self.starRadius,1)
 
 
 

@@ -10,7 +10,7 @@ class Config:
         self.pivotRadius=10
         self.grav=0+981j
 
-        self.screenVelSlope=0.1
+        self.screenVelSlope=0#0.1
         self.initalPlayerVel=0-1000j
 
         self.teatherSpringConst=100
@@ -21,7 +21,7 @@ class Config:
 
         self.starRadius=3
         self.starParalaxCoefficents = [1,1.5,2.74]
-
+        self.starColor=(120,120,120)
         self.scoreDivisor=10
 
         self.fontSize=60
