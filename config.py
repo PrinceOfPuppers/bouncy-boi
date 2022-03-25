@@ -30,8 +30,8 @@ class Config:
         self.boostConsumptionRate=1
         self.boostForce=500
         #screen dimensions and scaling
-        screenWidth=root.winfo_screenwidth()-100
-        screenHeight=root.winfo_screenheight()-100
+        screenWidth=min(root.winfo_screenwidth()-100, 2000)
+        screenHeight=min(root.winfo_screenheight()-100, 1000)
         self.screenSize=[screenWidth,screenHeight]
 
         devWidth=1500
@@ -44,7 +44,7 @@ class Config:
         self.playSymbol=[[[-30, -40], [-30, 40]], [[-30, 40], [50, 0]], [[50, 0], [-30, -40]]]
         
         self.playerAsset=np.array([[-10.0, 15], [0.0, -15.0], [10.0, 15], [0.0, 5.0]])
-        self.pivotAssets=np.array([[[-15.0, 0.0], [-15, 0], [-10, 5], [-10, 10], [-5, 10], [0, 15], [5, 10], [10, 10.0], [10, 5], [15, 0], [10, -5], [10, -10], [5, -10], [0, -15], [-5, -10], [-10, -10],[-10, -5]],[[0, 5], [5, 0], [0, -5], [-5, 0]]])
+        self.pivotAssets=[[[-15.0, 0.0], [-15, 0], [-10, 5], [-10, 10], [-5, 10], [0, 15], [5, 10], [10, 10.0], [10, 5], [15, 0], [10, -5], [10, -10], [5, -10], [0, -15], [-5, -10], [-10, -10],[-10, -5]],[[0, 5], [5, 0], [0, -5], [-5, 0]]]
         
         self.boosterAnimation=np.array([
             [[0.0, 10.0], [-5.0, 15.0], [0.0, 30.0], [5.0, 15.0]], 
@@ -90,9 +90,10 @@ class Config:
             point[0]*=self.screenScaling
             point[1]*=self.screenScaling
         
-        for point in self.playSymbol[0]:
-            point[0]*=self.screenScaling
-            point[1]*=self.screenScaling
+        for asset in self.playSymbol:
+            for point in asset:
+                point[0]*=self.screenScaling
+                point[1]*=self.screenScaling
         
         for point in self.playerAsset:
             point[0]*=self.screenScaling

@@ -143,12 +143,15 @@ class GameManager:
 
     def resetScreen(self):
             #intialize score text
-            highScore=int(open(self.dirPath+"highscore.txt", "r").read())
+            try:
+                highScore=int(open(self.dirPath+"highscore.txt", "r").read())
+            except:
+                highScore=0
             score=round(self.screenPosition[1]/self.scoreDivisor)
 
             if score>=highScore:
                 self.resetText.changeText('HIGHSCORE'+' '+str(score))
-                writeHighscore=open(self.dirPath+"highscore.txt", "w")
+                writeHighscore=open(self.dirPath+"highscore.txt", "w+")
                 writeHighscore.write(str(score))
             else:
                 self.resetText.changeText('SCORE'+' '+str(abs(score)))
